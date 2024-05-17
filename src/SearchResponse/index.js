@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BiArrowBack, BiSearch } from "react-icons/bi";
 import './style.css';
 
 const SaltForm = () => {
@@ -11,6 +12,7 @@ const SaltForm = () => {
   const [showAllForms, setShowAllForms] = useState(false); // State to toggle form buttons visibility
   const [showAllStrengths, setShowAllStrengths] = useState(false); // State to toggle strength buttons visibility
   const [showAllPackings, setShowAllPackings] = useState(false); // State to toggle packing buttons visibility
+  const [onHome, setOnHome] = useState(true);
 
   const fetchSaltSuggestions = async () => {
     if (!searchTerm) return;
@@ -58,6 +60,17 @@ const SaltForm = () => {
 
   const handleSearchClick = () => {
     fetchSaltSuggestions();
+    setOnHome(false);
+  };
+
+  const resetSearch = () => {
+    setSearchTerm('');
+    setSaltSuggestions([]);
+    setSelectedForms({});
+    setSelectedStrengths({});
+    setSelectedPackings({});
+    setLowestPrices({});
+    setOnHome(true);
   };
 
   const handleFormClick = (form, index) => {
@@ -70,7 +83,7 @@ const SaltForm = () => {
       setLowestPrices({ ...lowestPrices, [index]: null }); // Reset lowest price when form changes
     }
   };
-  
+
   const handleStrengthClick = (strength, index) => {
     setSelectedStrengths({ ...selectedStrengths, [index]: strength });
     setSelectedPackings({ ...selectedPackings, [index]: null }); // Reset packing when strength changes
@@ -80,7 +93,7 @@ const SaltForm = () => {
       setLowestPrices({ ...lowestPrices, [index]: null }); // Reset lowest price when strength changes
     }
   };
-  
+
   const handlePackingClick = (packing, index) => {
     setSelectedPackings({ ...selectedPackings, [index]: packing });
     calculateLowestPrice(index);
@@ -91,20 +104,20 @@ const SaltForm = () => {
     const form = selectedForms[index];
     const strength = selectedStrengths[index];
     const packing = selectedPackings[index];
-  
+
     // If either strength or packing is null, display a message
     if (!strength || !packing) {
       setLowestPrices({ ...lowestPrices, [index]: 'Selected medicine is not available' });
       return;
     }
-  
+
     const priceData = selectedSalt.salt_forms_json[form][strength][packing];
-  
+
     if (!priceData) {
       setLowestPrices({ ...lowestPrices, [index]: 'Selected packing is not available' });
       return;
     }
-  
+
     // Filter out null prices and get the lowest price
     let lowestPrice = null;
     Object.values(priceData).forEach((product) => {
@@ -118,14 +131,13 @@ const SaltForm = () => {
         });
       }
     });
-  
+
     if (lowestPrice === null) {
       setLowestPrices({ ...lowestPrices, [index]: 'No valid price available for selected packing' });
     } else {
       setLowestPrices({ ...lowestPrices, [index]: lowestPrice });
     }
   };
-  
 
   // Function to toggle visibility of form buttons
   const toggleFormsVisibility = () => {
@@ -140,32 +152,34 @@ const SaltForm = () => {
     setShowAllPackings(!showAllPackings);
   };
 
-  function ButtonClass(isSelected,isAvailable){
-      let buttonClass;
+  function getButtonClass(isSelected, isAvailable) {
     if (isSelected && isAvailable) {
-      buttonClass = 'selected-available ';
+      return 'selected-available';
     } else if (isSelected && !isAvailable) {
-      buttonClass = 'selected-notAvailable';
+      return 'selected-notAvailable';
     } else if (!isSelected && isAvailable) {
-      buttonClass = 'notSelected-Available';
+      return 'notSelected-Available';
     } else {
-      buttonClass = 'notSelected-notAvailable';
+      return 'notSelected-notAvailable';
     }
-    return buttonClass;
   }
 
   return (
     <div>
       <div className='form'>
-        <input 
+        <button className="back--button" onClick={resetSearch}>
+          {onHome ? <BiSearch /> : <BiArrowBack />}
+        </button>
+        <input
           className="form-input"
-          type="text" 
-          placeholder="Enter search term" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
+          type="text"
+          placeholder="Enter search term"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="form--button" onClick={handleSearchClick}>Search</button>
+        <button className="search--button" onClick={handleSearchClick}>Search</button>
       </div>
+      {onHome ? <p className='home-text'>Find medicines with amazing discount</p> : null}
 
       {saltSuggestions.map((salt, index) => (
         <div className='salt-box' key={index}>
@@ -175,9 +189,8 @@ const SaltForm = () => {
               <div className='button'>
                 {salt.available_forms.slice(0, showAllForms ? salt.available_forms.length : 2).map((form, formIndex) => {
                   const isSelected = selectedForms[index] === form;
-                  const isAvailable = salt.salt_forms_json[form];
-                  let buttonClass = '';
-                  buttonClass = ButtonClass(isSelected, isAvailable)
+                  const isAvailable = Boolean(salt.salt_forms_json[form]);
+                  const buttonClass = getButtonClass(isSelected, isAvailable);
                   return (
                     <button
                       key={formIndex}
@@ -200,23 +213,22 @@ const SaltForm = () => {
               <div className='selection'>
                 <div className='selection-type'>Strength:</div>
                 <div className='button'>
-                  {Object.keys(salt.salt_forms_json[selectedForms[index]]).slice(0, showAllStrengths ? 
+                  {Object.keys(salt.salt_forms_json[selectedForms[index]]).slice(0, showAllStrengths ?
                     Object.keys(salt.salt_forms_json[selectedForms[index]]).length : 2)
                     .map((strength, strengthIndex) => {
-                    const isSelected = selectedStrengths[index] === strength;
-                    const isAvailable = salt.salt_forms_json[selectedForms[index]][strength];
-                    let buttonClass = '';
-                    buttonClass = ButtonClass(isSelected, isAvailable)
-                    return (
-                      <button
-                        key={strengthIndex}
-                        onClick={() => handleStrengthClick(strength, index)}
-                        className={buttonClass}
-                      >
-                        {strength}
-                      </button>
-                    );
-                  })}
+                      const isSelected = selectedStrengths[index] === strength;
+                      const isAvailable = Boolean(salt.salt_forms_json[selectedForms[index]][strength]);
+                      const buttonClass = getButtonClass(isSelected, isAvailable);
+                      return (
+                        <button
+                          key={strengthIndex}
+                          onClick={() => handleStrengthClick(strength, index)}
+                          className={buttonClass}
+                        >
+                          {strength}
+                        </button>
+                      );
+                    })}
                   {Object.keys(salt.salt_forms_json[selectedForms[index]]).length > 2 && (
                     <button className="toggle-button" onClick={toggleStrengthsVisibility}>
                       {showAllStrengths ? 'hide...' : 'more...'}
@@ -230,23 +242,22 @@ const SaltForm = () => {
               <div className='selection'>
                 <div className='selection-type'>Packing:</div>
                 <div className='button'>
-                  {Object.keys(salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]]).slice(0, showAllPackings ? 
+                  {Object.keys(salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]]).slice(0, showAllPackings ?
                     Object.keys(salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]]).length : 2)
                     .map((packing, packingIndex) => {
-                    const isSelected = selectedPackings[index] === packing;
-                    const isAvailable = salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]][packing];
-                    let buttonClass = '';
-                    buttonClass = ButtonClass(isSelected, isAvailable)
-                    return (
-                      <button
-                        key={packingIndex}
-                        onClick={() => handlePackingClick(packing, index)}
-                        className={buttonClass}
-                      >
-                        {packing}
-                      </button>
-                    );
-                  })}
+                      const isSelected = selectedPackings[index] === packing;
+                      const isAvailable = Boolean(salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]][packing]);
+                      const buttonClass = getButtonClass(isSelected, isAvailable);
+                      return (
+                        <button
+                          key={packingIndex}
+                          onClick={() => handlePackingClick(packing, index)}
+                          className={buttonClass}
+                        >
+                          {packing}
+                        </button>
+                      );
+                    })}
                   {Object.keys(salt.salt_forms_json[selectedForms[index]][selectedStrengths[index]]).length > 2 && (
                     <button className="toggle-button" onClick={togglePackingsVisibility}>
                       {showAllPackings ? 'hide...' : 'more...'}
@@ -269,8 +280,8 @@ const SaltForm = () => {
           <div className='price'>
             {lowestPrices[index] && (
               <div>
-                {typeof lowestPrices[index] === 'number' ? 
-                  `From ₹${lowestPrices[index]}` : 
+                {typeof lowestPrices[index] === 'number' ?
+                  `From ₹${lowestPrices[index]}` :
                   lowestPrices[index]}
               </div>
             )}
@@ -282,4 +293,3 @@ const SaltForm = () => {
 }
 
 export default SaltForm;
-

@@ -79,6 +79,9 @@ button{
   
   .selected-notAvailable {
     border: 2px dotted #65efac;
+    -webkit-box-shadow: 6px 2px 49px -5px rgba(192, 236, 214, 0.81);
+    -moz-box-shadow: 6px 2px 49px -5px rgba(158,247,202,0.81);
+     box-shadow: 6px 2px 49px -5px rgba(158,247,202,0.81);
   }
   
   .notSelected-Available{
@@ -105,7 +108,7 @@ button{
     display: inline-flex !important;
 }
 
-.form--button{
+.search--button{
     font-size: 15px;
     border-radius: 0 35px 35px 0;
     color: rgb(24, 6, 158);
@@ -117,16 +120,28 @@ button{
     box-shadow: 5px 5px 25px rgb(221, 216, 207);;
 }
 
+.back--button{
+    font-size: 20px;
+    background-color: inherit;
+    background-color: white !important;
+    color: black;
+    margin: 0;
+    padding: 0;
+    width: 45px;
+    border-radius: 35px 0 0 35px;
+    box-shadow: 5px 5px 25px rgb(221, 216, 207);
+}
+
+
 .form-input:focus{
     outline: none;;
 }
 
 .form-input {
     font-size: 15px;
-    padding: 15px;
+    padding: 15px 5px;
     box-sizing: border-box;
     border: none ;
-    border-radius: 35px 0 0 35px;
     height: 45px;
     width: 100%;
     height: 60px;
@@ -134,8 +149,8 @@ button{
     box-shadow: 5px 5px 25px rgb(221, 216, 207);
 }
 
-/* .form > p{
+.home-text{
     font-size: 25px;
     text-align: center;
     padding: 250px 0;
-} */
+}
